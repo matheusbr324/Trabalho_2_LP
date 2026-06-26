@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define ABSURDO 9999999
 #define FIM 0
 #define MAX_SENSOR_LOCAL 3
 #define T_STR 100
@@ -57,6 +58,7 @@ void limpar_tela(void);
     //id e nome(todos) 
     void lista_sensores(sensor_t *sensor);
     void lista_setores(setor_t *setor);
+    void lista_sensores_por_setor(setor_t *setor);
 
     //id, nome e descrições
     void dados_sensor(sensor_t *sensor);
@@ -64,6 +66,9 @@ void limpar_tela(void);
     void dados_setor(setor_t *setor);
     void dados_todos_setor(setor_t *setor);
     void mostra_sensores_por_setor(setor_t *setor);
+
+    //relatórios
+    void relata_leituras(setor_t *lista_de_setores);
 
 //funções de cadastro
 sensor_t *cadastro_sensor(int qtd_sensores);
@@ -73,6 +78,10 @@ void coloca_setor_na_lista(setor_t *loop, setor_t **lista, int qtd_setores);
     //função que distribui sensores em setores
     sensor_t *copia_sensor(sensor_t *sensor);
     void distribui_sensor(setor_t **lista_de_setor, sensor_t *lista_de_sensor);
+
+//funções que inserem dados
+sensor_t *acha_sensor_no_setor(setor_t *lista_de_setores);
+void insere_dados_de_leitura(setor_t *lista_de_setores);
 
 //funções que pedem pro usuario
 int pede_id_sensor(sensor_t *lista);
@@ -91,6 +100,9 @@ int main(void)
     //variáveis que controlam quantidade
     int qtd_sensores = 0;
     int qtd_setores = 0;
+
+    //variáveis flags
+    int tem_leituras = 0;
 
     //variáveis de menu
     int opcao, opc_1, opc_2;
@@ -188,10 +200,27 @@ int main(void)
                     switch (opc_2) {
                         //Inserir dados de leitura do sensor
                         case 1: 
+                            if (!lista_de_sensores) {
+                                printf("Não há sensores cadastrados!\n");
+                            } else {
+                                if (!lista_de_setores) {
+                                    printf("Não há setores cadastrados!\n");
+                                } else {
+                                    insere_dados_de_leitura(lista_de_setores);
+                                    tem_leituras = 1;
+                                }
+                            }
+                            mostrar_mensagem();
                             break;
 
                         //Relatório de leituras
                         case 2:
+                            if (tem_leituras == 0) {
+                                printf("Ainda não há leituras cadastradas no sistema");
+                            } else {
+                                relata_leituras(lista_de_setores);
+                            }
+                            mostrar_mensagem();
                             break;
 
                         //Relatório de variação de leitura
@@ -314,6 +343,18 @@ void lista_setores(setor_t *setor)
     printf("\n");
 }
 
+void lista_sensores_por_setor(setor_t *setor)
+{
+    if (!setor->sensores_instalados) {
+        printf("Não há sensores cadastrados nesse setor!\n");
+    } else {
+        printf("Sensores instalados: \n");
+        lista_sensores(setor->sensores_instalados);
+        
+    }
+    printf("\n");
+}
+
 void dados_sensor(sensor_t *sensor)
 {
     printf("Id do sensor..............: %i\n", sensor->id);
@@ -349,13 +390,37 @@ void mostra_sensores_por_setor(setor_t *setor)
         printf("Não há sensores cadastrados nesse setor!\n");
     } else {
         printf("Sensores instalados: \n");
-        for (setor; setor->sensores_instalados != NULL; setor->sensores_instalados = setor->sensores_instalados->prox ) {
-            dados_sensor(setor->sensores_instalados);
-            printf("Horário da primeira leitura %02i:%02i\n", setor->sensores_instalados->horario_primeira_leitura.horas, setor->sensores_instalados->horario_primeira_leitura.minutos);
-            printf("Horário da segunda leitura %02i:%02i\n", setor->sensores_instalados->horario_segunda_leitura.horas, setor->sensores_instalados->horario_segunda_leitura.minutos);
+        sensor_t *sensor = (sensor_t *)calloc(sizeof(sensor_t), 1); 
+        sensor = setor->sensores_instalados;
+        for (sensor; sensor != NULL; sensor = sensor->prox) {
+            dados_sensor(sensor);
+            printf("Horário da primeira leitura %02i:%02i\n", sensor->horario_primeira_leitura.horas, sensor->horario_primeira_leitura.minutos);
+            printf("Horário da segunda leitura %02i:%02i\n", sensor->horario_segunda_leitura.horas, sensor->horario_segunda_leitura.minutos);
         }
+        free(sensor);
     }
     printf("\n");
+}
+
+void relata_leituras(setor_t *lista_de_setores) 
+{
+    sensor_t *sensor = acha_sensor_no_setor(lista_de_setores);
+    if (!sensor) return;
+
+    printf("Horario: \n");
+    printf("%02i:%02i -- ", sensor->horario_primeira_leitura.horas, sensor->horario_primeira_leitura.minutos);
+    if (sensor->primeira_medicao == ABSURDO) {
+        printf("Não há leituras nesse horário\n");
+    } else {
+        printf("%.2f\n", sensor->primeira_medicao);
+    }
+
+    printf("%02i:%02i -- ", sensor->horario_segunda_leitura.horas, sensor->horario_segunda_leitura.minutos);
+    if (sensor->segunda_medicao == ABSURDO) {
+        printf("Não há leituras nesse horário\n");
+    } else {
+        printf("%.2f\n", sensor->segunda_medicao);
+    }
 }
 
 //cadastros
@@ -484,7 +549,11 @@ void distribui_sensor(setor_t **lista_de_setor, sensor_t *lista_de_sensor)
     do {
         printf("Minuto da segunda leitura do sensor (entre 0 e 59): ");
         scanf("%i", &aux->horario_segunda_leitura.minutos);
+        getchar();
     } while (aux->horario_segunda_leitura.minutos > 59 || aux->horario_segunda_leitura.minutos < 0);
+    
+    aux->primeira_medicao = ABSURDO;
+    aux->segunda_medicao = ABSURDO;
 
     aux->prox = setor->sensores_instalados;
     setor->sensores_instalados = aux;
@@ -505,6 +574,99 @@ sensor_t *copia_sensor(sensor_t *sensor)
     return aux;
 }
 
+//inserir dados
+sensor_t *acha_sensor_no_setor(setor_t *lista_de_setores)
+{
+    setor_t *lista = (setor_t *)calloc(sizeof(setor_t), 1);
+    int id;
+
+    do {
+        id = pede_id_setor(lista_de_setores);
+        lista = localiza_setor_por_id(lista_de_setores, id);
+
+        if (!lista) {
+            printf("Setor não encontrado!\n");
+            printf("Para sair da operação digite 0\n");
+        }
+    } while (!lista && id != 0);
+    
+    if (id == 0) {
+        printf("Operação cancelada!\n");
+        return NULL;
+    }
+
+    if (!lista->sensores_instalados) {
+        printf("Não há sensores instalados nesse setor\n");
+        printf("Operação cancelada!\n");
+        return NULL;
+    }
+
+    sensor_t *sensor = (sensor_t *)calloc(sizeof(sensor_t), 1);
+    do {
+        id = pede_id_sensor(lista->sensores_instalados);
+        sensor = localiza_sensor_por_id(lista->sensores_instalados, id);
+
+        if (!sensor) {
+            printf("Sensor não encontrado!\n");
+            printf("Para sair da operação digite 0\n");
+        }
+    } while (!sensor && id != 0);
+    
+    if (id == 0) {
+        printf("Operação cancelada!\n");
+        return NULL;
+    }
+
+    return sensor;
+}
+
+void insere_dados_de_leitura(setor_t *lista_de_setores)
+{
+    int opc;
+    float leitura;
+    sensor_t *sensor = acha_sensor_no_setor(lista_de_setores);
+
+    if (!sensor) return;
+
+    printf("Dados da leitura: ");
+    scanf("%f", &leitura);
+    getchar();
+
+    if (leitura > sensor->maximo_faixa_leitura || leitura < sensor->minimo_faixa_leitura) {
+        char resposta;
+        printf("A leitura está fora dos limites do sensor\n");
+        printf("Deseja inserir os dados mesmo assim?(Digite S para confirmar) ");
+        scanf("%c", &resposta);
+        getchar();
+
+        if (resposta != 'S' && resposta != 's') {
+            printf("Operação cancelada!\n");
+            return;
+        }
+    }
+
+    do {
+        printf("Em qual horário deseja inserir a leitura?\n");
+        printf("1.Primeira leitura: %02i:%02i\n", sensor->horario_primeira_leitura.horas, sensor->horario_primeira_leitura.minutos);
+        printf("2.Segunda leitura: %02i:%02i\n", sensor->horario_segunda_leitura.horas, sensor->horario_segunda_leitura.minutos);
+        printf("0.Cancelar\n");
+        scanf("%i", &opc);
+        getchar();
+        
+        if (opc == 1) {
+            sensor->primeira_medicao = leitura;         
+            printf("Leitura inserida com sucesso!\n"); 
+            break;
+        } else {
+            if (opc == 2) {
+                sensor->segunda_medicao = leitura;         
+                printf("Leitura inserida com sucesso!\n");
+                break;
+            }
+        }
+    } while (opc != 0);
+    return;
+}
 
 //pede id pro usuário
 int pede_id_sensor(sensor_t *lista)
