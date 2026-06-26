@@ -54,30 +54,30 @@ void mostra_dados_sensor(int indice); //feito
 void mostra_sensores_por_setor(void); //feito
 void mostra_dados_setores(void); //feito
 sensor_t cadastro_sensor(void); //feito
-monitoramento_t cadastro_setor(void);
-void distribui_sensor(int id_do_sensor, int id_do_setor);
-int le_id_setor(void);
-int le_id_sensor(void);
+monitoramento_t cadastro_setor(void); //feito
+void distribui_sensor(int id_do_sensor, int id_do_setor); //feito
+int le_id_setor(void); //feito
+int le_id_sensor(void); //feito
 void relatorio_sensor(void); //removido
 void relatorio_setor(void); //removido
-int encontrar_sensor(int id);
-int encontrar_setor(int id);
-void inserir_dados_de_leitura(void);
-void relatorio_de_leituras(void);
+int encontrar_sensor(int id); //feito
+int encontrar_setor(int id); //feito
+void inserir_dados_de_leitura(void); //feito
+void relatorio_de_leituras(void); //feito
 float variacao_de_leitura(void);
 float media_de_leitura(void);
-verificacao_t verificacao_se_sensor_E_setor(void);
+verificacao_t verificacao_se_sensor_E_setor(void); //feito
 void mostrar_mensagem(void); //feito
 void limpar_tela(void); //feito
 
 
 //Vetores de dados
-sensor_t sensores[MAX_SENSORES];
-monitoramento_t setores[MAX_SETORES];
+sensor_t sensores[MAX_SENSORES]; //substituido
+monitoramento_t setores[MAX_SETORES]; //substituido
 
 //Contadores de quantidade
-int qtd_sensores = 0;
-int qtd_setores = 0;
+int qtd_sensores = 0; //substituido
+int qtd_setores = 0; //substituido
 
 int main()
 {
