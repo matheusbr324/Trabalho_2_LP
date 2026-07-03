@@ -1,0 +1,938 @@
+#include <ctype.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define ABSURDO 9999999
+#define FIM 0
+#define MAX_SENSOR_LOCAL 3
+#define T_STR 100
+
+typedef char string[T_STR];
+
+typedef struct horario {
+    int horas;
+    int minutos;
+} horario_t;
+
+typedef struct sensor {
+    int id;
+    string tipo;
+    float minimo_faixa_leitura;
+    float maximo_faixa_leitura;
+    horario_t horario_primeira_leitura;
+    horario_t horario_segunda_leitura;
+    float primeira_medicao;
+    float segunda_medicao;
+    struct sensor *prox;
+} sensor_t;
+
+typedef struct setor {
+    int id;
+    string descricao;
+    sensor_t *sensores_instalados;
+    int qtd_sensores_instalados;
+    struct setor *prox;
+} setor_t;
+
+typedef struct verificacao {
+    int indice_sensor;
+    int indice_setor;
+    int true_false;
+} verificacao_t;
+
+//funções de menu
+    int menu_principal(void);
+    int menu_setor_sensor(void);
+    int menu_leituras(void);
+    int menu_arquivos(void);
+
+//funções de formatação de string
+    void remove_enter(string str);
+    void formata_maiusculo(string str, int i);
+
+//funções de limpesa de tela
+    void mostrar_mensagem(void);
+    void limpar_tela(void);
+
+//funções de print:
+    //id e nome(todos) 
+    void lista_sensores(sensor_t *sensor);
+    void lista_setores(setor_t *setor);
+    void lista_sensores_por_setor(setor_t *setor);
+
+    //id, nome e descrições
+    void dados_sensor(sensor_t *sensor);
+    void dados_todos_sensor(sensor_t *sensor);
+    void dados_setor(setor_t *setor);
+    void dados_todos_setor(setor_t *setor);
+    void mostra_sensores_por_setor(setor_t *setor);
+
+    //relatórios
+    void relata_leituras(setor_t *lista_de_setores);
+    void relata_leituras_csv(setor_t *lista_de_setores);
+    float relata_variacao(setor_t *lista_de_setores);
+    void relata_variacao_csv(setor_t *lista_de_setores);
+    float relata_media(setor_t *lista_de_setores);
+    void relata_media_csv(setor_t *lista_de_setores);
+
+//funções de cadastro void lista_setores(setor_t *setor);
+    sensor_t *cadastro_sensor(int qtd_sensores);
+    void coloca_sensor_na_lista(sensor_t *loop, sensor_t **lista, int qtd_sensores);
+    setor_t *cadastro_setor(int qtd_setores);
+    void coloca_setor_na_lista(setor_t *loop, setor_t **lista, int qtd_setores);
+    //função que distribui sensores em setores
+        sensor_t *copia_sensor(sensor_t *sensor);
+        void distribui_sensor(setor_t **lista_de_setor, sensor_t *lista_de_sensor);
+
+//funções que inserem dados
+    sensor_t *acha_sensor_no_setor(setor_t *lista_de_setores);
+    void insere_dados_de_leitura(setor_t *lista_de_setores);
+
+//funções que pedem pro usuario
+    int pede_id_sensor(sensor_t *lista);
+    int pede_id_setor(setor_t *lista);
+
+//funções que localizam id
+    sensor_t *localiza_sensor_por_id(sensor_t *lista, int id);
+    setor_t *localiza_setor_por_id(setor_t *lista, int id);
+
+
+int main(void)
+{
+    //ponteiros de structs
+    sensor_t *lista_de_sensores = NULL;
+    setor_t *lista_de_setores = NULL;
+
+    //variáveis que controlam quantidade
+    int qtd_sensores = 0;
+    int qtd_setores = 0;
+
+    //variáveis flags
+    int tem_leituras = 0;
+
+    //variáveis de menu
+    int opcao, opc_1, opc_2, opc_3;
+    
+    //variáveis dos relatórios
+    float variacao, media;
+
+    //menu principal
+    do {
+        limpar_tela();
+        opcao = menu_principal();
+
+        switch (opcao) {
+            //menu de sensores
+            case 1: 
+                do {
+                    limpar_tela();
+                    opc_1 = menu_setor_sensor();
+
+                    switch (opc_1) {
+                        //Cadastrar sensor
+                        case 1: 
+                            coloca_sensor_na_lista(lista_de_sensores, &lista_de_sensores, qtd_sensores);
+                            printf("Sensor cadastrado!\n");
+                            qtd_sensores++;
+                            mostrar_mensagem();
+                            break;
+
+                        //Listar sensores cadastrados
+                        case 2: 
+                            if (!lista_de_sensores) {
+                                printf("Não há sensores cadastrados!\n");
+                            } else {
+                                lista_sensores(lista_de_sensores);
+                            }
+                            mostrar_mensagem();
+                            break;
+
+                        //Cadastrar setor
+                        case 3: 
+                            coloca_setor_na_lista(lista_de_setores, &lista_de_setores, qtd_setores);
+                            printf("Setor cadastrado!\n");
+                            qtd_setores++;
+                            mostrar_mensagem();
+                            break;
+
+                        //Listar setores cadastrados
+                        case 4: 
+                            if (!lista_de_setores) {
+                                printf("Não há setores cadastrados!\n");
+                            } else {
+                                lista_setores(lista_de_setores);
+                            }
+                            mostrar_mensagem();
+                            break;
+
+                        //Distribuir sensor
+                        case 5: 
+                            if (!lista_de_sensores) {
+                                printf("Não há sensores cadastrados!\n");
+                            } else {
+                                if (!lista_de_setores) {
+                                    printf("Não há setores cadastrados!\n");
+                                } else {
+                                    distribui_sensor(&lista_de_setores, lista_de_sensores);
+                                    printf("Sensor distribuido com sucesso!\n");
+                                }
+                            }
+                            mostrar_mensagem();
+                            break;
+
+                        //Listar sensores distribuídos
+                        case 6: 
+                            if (!lista_de_sensores) {
+                                printf("Não há sensores cadastrados!\n");
+                            } else {
+                                if (!lista_de_setores) {
+                                    printf("Não há setores cadastrados!\n");
+                                } else {
+                                    dados_todos_setor(lista_de_setores);
+                                }
+                            }
+                            mostrar_mensagem();
+                            break;
+                    }
+                } while (opc_1 != FIM);
+                break;
+
+            //menu de leituras
+            case 2: 
+                do {
+                    limpar_tela();
+                    opc_2 = menu_leituras();
+
+                    switch (opc_2) {
+                        //Inserir dados de leitura do sensor
+                        case 1: 
+                            if (!lista_de_sensores) {
+                                printf("Não há sensores cadastrados!\n");
+                            } else {
+                                if (!lista_de_setores) {
+                                    printf("Não há setores cadastrados!\n");
+                                } else {
+                                    insere_dados_de_leitura(lista_de_setores);
+                                    tem_leituras = 1;
+                                }
+                            }
+                            mostrar_mensagem();
+                            break;
+
+                        //Relatório de leituras (na tela)
+                        case 2:
+                            if (tem_leituras == 0) {
+                                printf("Ainda não há leituras cadastradas no sistema");
+                            } else {
+                                relata_leituras(lista_de_setores);
+                            }
+                            mostrar_mensagem();
+                            break;
+
+                        //Relatório de leituras (em .csv)
+                        case 3: 
+                            if (tem_leituras == 0) {
+                                printf("Ainda não há leituras cadastradas no sistema");
+                            } else {
+                                relata_leituras_csv(lista_de_setores);
+                            }
+                            break;
+
+                        //Relatório de variação de leitura (na tela)
+                        case 4: 
+                            variacao = relata_variacao(lista_de_setores);
+                            if (variacao != ABSURDO) {
+                                printf("A variação das leituras é: %.2f", variacao);
+                            }
+                            mostrar_mensagem();
+                            break;
+
+                        //Relatório de variação de leitura (.csv)
+                        case 5: 
+                            relata_variacao_csv(lista_de_setores);
+                            break;
+
+                        //Relatório de média de leitura (na tela)
+                        case 6:
+                            media = relata_media(lista_de_setores);
+                            if (media != ABSURDO) {
+                                printf("A média das leituras é: %.2f", media);
+                            }
+                            mostrar_mensagem();
+                            break;
+
+                        //Relatório de média de leitura (.csv)
+                        case 7:
+                            relata_media_csv(lista_de_setores);
+                            break;
+                    }
+                } while (opc_2 != FIM);
+                break;
+
+            case 3: 
+                do {
+                    opc_3 = menu_arquivos();
+
+                    switch (opc_3) {
+                        case 1:
+
+                            break;
+                    }
+                } while(opc_3 != FIM);
+                break;
+        }
+    } while (opcao != FIM);
+
+    return 0;
+}
+
+//implementações de funções
+//menus
+int menu_principal(void)
+{
+    int opcao;
+
+    printf("|  MENU PRINCIPAL  |\n");
+    printf("--------------------\n");
+    printf("1.Menu de sensores\n");
+    printf("2.Menu de leituras\n");
+    printf("0.Sair do programa\n");
+    printf("--------------------\n");
+    printf("::: ");
+    scanf("%i", &opcao);
+    getchar();
+
+    return opcao;
+}
+
+int menu_setor_sensor(void)
+{
+    int opcao;
+
+    printf("|   MENU SENSORES   |\n");
+    printf("---------------------\n");
+    printf("1.Cadastrar sensor\n");
+    printf("2.Listar sensores cadastrados\n");
+    printf("3.Cadastrar setor\n");
+    printf("4.Listar setores cadastrados\n");
+    printf("5.Distribuir sensor\n");
+    printf("6.Listar sensores distribuídos\n");
+    printf("0.Retornar ao menu principal\n");
+    printf("--------------------\n");
+    printf("::: ");
+    scanf("%i", &opcao);
+    getchar();
+
+    return opcao;
+}
+
+int menu_leituras(void)
+{
+    int opcao;
+
+    printf("|   MENU RELATÓRIOS   |\n");
+    printf("-----------------------\n");
+    printf("1.Inserir dados de leitura do sensor\n");
+    printf("2.Relatório de leituras (na tela)\n");
+    printf("3.Relatório de leituras (.csv)\n");
+    printf("4.Relatório de variação de leitura (na tela)\n");
+    printf("5.Relatório de variação de leitura (.csv)\n");
+    printf("6.Relatório de média de leitura (na tela)\n");
+    printf("7.Relatório de média de leitura (.csv)\n");
+    printf("0.Retornar ao menu principal\n");
+    printf("-----------------------\n");
+    printf("::: ");
+    scanf("%i", &opcao);
+    getchar();
+
+    return opcao;
+}
+
+int menu_arquivos(void)
+{
+    int opcao;
+    
+    printf("|    MENU ARQUIVOS    |\n");
+    printf("-----------------------\n");
+    printf("1.Exportar os dados em HTML\n");
+    printf("0.Retornar ao menu principal\n");
+    printf("-----------------------\n");
+    printf("::: ");
+    scanf("%i", &opcao);
+    getchar();
+
+    return opcao;
+}
+
+//formatação de string
+void remove_enter(string str)
+{
+    str[strlen(str)-1] = '\0';
+}
+
+//função recursiva
+void formata_maiusculo(string str, int i)
+{
+    //salvaguarda
+    if (i > strlen(str)) {
+        return;
+    }
+
+    str[i] = toupper(str[i]);
+    i++;
+    formata_maiusculo(str, i);
+}
+
+
+//limpa tela
+void mostrar_mensagem(void)
+{
+    printf("PARA RETORNAR AO MENU PRESSIONE ENTER\n");
+    getchar();
+}
+
+void limpar_tela(void)
+{
+    system("clear");
+}
+
+
+//prints
+void lista_sensores(sensor_t *sensor)
+{
+    for (sensor; sensor != NULL; sensor = sensor->prox ) {
+        printf("Id: %i, tipo: %s\n", sensor->id, sensor->tipo);
+    }
+    printf("\n");
+}
+
+void lista_setores(setor_t *setor)
+{
+    for (setor; setor != NULL; setor = setor->prox ) {
+        printf("Id: %i, descrição: %s\n", setor->id, setor->descricao);
+    }
+    printf("\n");
+}
+
+void lista_sensores_por_setor(setor_t *setor)
+{
+    if (!setor->sensores_instalados) {
+        printf("Não há sensores cadastrados nesse setor!\n");
+    } else {
+        printf("Sensores instalados: \n");
+        lista_sensores(setor->sensores_instalados);
+        
+    }
+    printf("\n");
+}
+
+void dados_sensor(sensor_t *sensor)
+{
+    printf("Id do sensor..............: %i\n", sensor->id);
+    printf("Tipo do sensor............: %s\n", sensor->tipo);
+    printf("Faixa de leitura do sensor: %.2f à %.2f\n", sensor->minimo_faixa_leitura, sensor->maximo_faixa_leitura);
+}
+
+void dados_todos_sensor(sensor_t *sensor)
+{
+    for (sensor; sensor != NULL; sensor = sensor->prox ) {
+        dados_sensor(sensor);
+    }
+    printf("\n");
+}
+
+void dados_setor(setor_t *setor)
+{
+    printf("Id: %i, descrição: %s\n", setor->id, setor->descricao);
+    mostra_sensores_por_setor(setor);
+}
+
+void dados_todos_setor(setor_t *setor)
+{
+    for (setor; setor != NULL; setor = setor->prox ) {
+        dados_setor(setor);
+    }
+    printf("\n");
+}
+
+void mostra_sensores_por_setor(setor_t *setor)
+{
+    if (!setor->sensores_instalados) {
+        printf("Não há sensores cadastrados nesse setor!\n");
+    } else {
+        printf("Sensores instalados: \n");
+        sensor_t *sensor = (sensor_t *)calloc(sizeof(sensor_t), 1); 
+        sensor = setor->sensores_instalados;
+        for (sensor; sensor != NULL; sensor = sensor->prox) {
+            dados_sensor(sensor);
+            printf("Horário da primeira leitura %02i:%02i\n", sensor->horario_primeira_leitura.horas, sensor->horario_primeira_leitura.minutos);
+            printf("Horário da segunda leitura %02i:%02i\n", sensor->horario_segunda_leitura.horas, sensor->horario_segunda_leitura.minutos);
+        }
+        free(sensor);
+    }
+    printf("\n");
+}
+
+void relata_leituras(setor_t *lista_de_setores) 
+{
+    sensor_t *sensor = acha_sensor_no_setor(lista_de_setores);
+    if (!sensor) return;
+
+    printf("Horario: \n");
+    printf("%02i:%02i -- ", sensor->horario_primeira_leitura.horas, sensor->horario_primeira_leitura.minutos);
+    if (sensor->primeira_medicao == ABSURDO) {
+        printf("Não há leituras nesse horário\n");
+    } else {
+        printf("%.2f\n", sensor->primeira_medicao);
+    }
+
+    printf("%02i:%02i -- ", sensor->horario_segunda_leitura.horas, sensor->horario_segunda_leitura.minutos);
+    if (sensor->segunda_medicao == ABSURDO) {
+        printf("Não há leituras nesse horário\n");
+    } else {
+        printf("%.2f\n", sensor->segunda_medicao);
+    }
+}
+
+void relata_leituras_csv(setor_t *lista_de_setores) 
+{
+    sensor_t *sensor = acha_sensor_no_setor(lista_de_setores);
+    FILE *fp = NULL;
+    fp = fopen("relatorios.csv", "w");
+    if (!sensor) return;
+
+    fprintf(fp, "Horario: ;");
+    fprintf(fp, "%02i:%02i;", sensor->horario_primeira_leitura.horas, sensor->horario_primeira_leitura.minutos);
+    fprintf(fp, "%02i:%02i\n", sensor->horario_segunda_leitura.horas, sensor->horario_segunda_leitura.minutos);
+    fprintf(fp, "Leituras: ;");
+
+    if (sensor->primeira_medicao == ABSURDO) {
+        fprintf(fp, "Não há leituras nesse horário;");
+    } else {
+        fprintf(fp, "%.2f;", sensor->primeira_medicao);
+    }
+
+    if (sensor->segunda_medicao == ABSURDO) {
+        fprintf(fp, "Não há leituras nesse horário;");
+    } else {
+        fprintf(fp, "%.2f;", sensor->segunda_medicao);
+    }
+
+    fclose(fp);
+}
+
+float relata_variacao(setor_t *lista_de_setores)
+{
+    sensor_t *sensor = acha_sensor_no_setor(lista_de_setores);
+
+    float primeira = sensor->primeira_medicao;
+    float segunda = sensor->segunda_medicao;
+    float variacao;
+
+    if (sensor->primeira_medicao == ABSURDO && sensor->segunda_medicao == ABSURDO) {
+        printf("Não há leituras feitas por esse sensor registradas no sistema\n");
+        return ABSURDO;
+    }
+
+    if (sensor->primeira_medicao == ABSURDO) return segunda;
+    if (sensor->segunda_medicao == ABSURDO) return primeira;
+
+    if (primeira > segunda) {
+        return (primeira - segunda);
+    } else {
+        return (segunda - primeira);
+    }
+}
+
+void relata_variacao_csv(setor_t *lista_de_setores)
+{
+    sensor_t *sensor = acha_sensor_no_setor(lista_de_setores);
+
+    FILE *fp = fopen("variacao.csv", "w");
+
+    float primeira, segunda, variacao;
+
+    fprintf(fp, "Primeira medição;");
+    fprintf(fp, "Segunda medição;");
+    fprintf(fp, "Variação (maior - menor)\n");
+
+    if (sensor->primeira_medicao == ABSURDO) {
+        fprintf(fp, "Sem medidas;");
+        primeira = 0;
+    } else {
+        fprintf(fp, "%f;", sensor->primeira_medicao);
+        primeira = sensor->primeira_medicao;
+    }
+
+    if (sensor->segunda_medicao == ABSURDO) {
+        fprintf(fp, "Sem medidas;");
+        segunda = 0;
+    } else {
+        fprintf(fp, "%f;", sensor->segunda_medicao);
+        segunda = sensor->segunda_medicao;
+    }
+
+    if (primeira > segunda) {
+        variacao = primeira - segunda;
+    } else {
+        variacao = segunda - primeira;
+    }
+
+    if (sensor->segunda_medicao == ABSURDO && sensor->primeira_medicao == ABSURDO) {
+        fprintf(fp, "Não há medidas para calcular;");
+    } else {
+        fprintf(fp, "%f;", variacao);
+    }
+
+    fclose(fp);
+}
+
+float relata_media(setor_t *lista_de_setores)
+{
+    sensor_t *sensor = acha_sensor_no_setor(lista_de_setores);
+
+    float primeira = sensor->primeira_medicao;
+    float segunda = sensor->segunda_medicao;
+    float media = (primeira + segunda) / 2;
+
+    if (sensor->primeira_medicao == ABSURDO && sensor->segunda_medicao == ABSURDO) {
+        printf("Não há leituras feitas por esse sensor registradas no sistema\n");
+        return ABSURDO;
+    }
+    if (sensor->primeira_medicao == ABSURDO) return segunda;
+    if (sensor->segunda_medicao == ABSURDO) return primeira;
+
+    return media;
+}
+
+void relata_media_csv(setor_t *lista_de_setores)
+{
+    sensor_t *sensor = acha_sensor_no_setor(lista_de_setores);
+
+    FILE *fp = fopen("media.csv", "w");
+
+    float primeira = sensor->primeira_medicao;
+    float segunda = sensor->segunda_medicao;
+    float media = (primeira + segunda) / 2;
+
+    fprintf(fp, "Primeira medição;");
+    fprintf(fp, "Segunda medição;");
+    fprintf(fp, "Média\n");
+
+    if (sensor->primeira_medicao == ABSURDO) {
+        fprintf(fp, "Sem medidas;");
+    } else {
+        fprintf(fp, "%f;", sensor->primeira_medicao);
+    }
+
+    if (sensor->segunda_medicao == ABSURDO) {
+        fprintf(fp, "Sem medidas;");
+    } else {
+        fprintf(fp, "%f;", sensor->segunda_medicao);
+    }
+
+    if (sensor->segunda_medicao == ABSURDO && sensor->primeira_medicao == ABSURDO) {
+        fprintf(fp, "Não há medidas para calcular;");
+    } else {
+        fprintf(fp, "%f;", media);
+    }
+
+    fclose(fp);
+}
+
+//cadastros
+sensor_t *cadastro_sensor(int qtd_sensores)
+{
+    sensor_t *sensor = (sensor_t *)calloc(sizeof(sensor_t), 1);
+    sensor->prox = NULL;
+
+    sensor->id = qtd_sensores + 1;
+    printf("Sensor de id: %i\n", sensor->id);
+
+    printf("Qual o tipo do sensor? ");
+    fgets(sensor->tipo, T_STR, stdin);
+    remove_enter(sensor->tipo);
+    formata_maiusculo(sensor->tipo, 0);
+
+    printf("Qual o valor mínimo lido pelo sensor? ");
+    scanf("%f", &sensor->minimo_faixa_leitura);
+    getchar();
+
+    printf("Qual o valor máximo lido pelo sensor? ");
+    scanf("%f", &sensor->maximo_faixa_leitura);
+    getchar();
+
+    return sensor;
+}
+
+void coloca_sensor_na_lista(sensor_t *loop, sensor_t **lista, int qtd_sensores)
+{
+    sensor_t *novo_sensor = cadastro_sensor(qtd_sensores);
+    
+    //adiciona pelo final
+    if (!(*lista)) {
+        (*lista) = novo_sensor;
+    } else {
+        for (loop; loop != NULL; loop = loop->prox ) {
+            if (!((*lista)->prox)) {
+                (*lista)->prox = novo_sensor;
+            }
+        }
+    }
+
+    //garante que não fiquem pontas soltas
+    novo_sensor = NULL;
+    free(novo_sensor);
+}
+
+setor_t *cadastro_setor(int qtd_setores)
+{
+    setor_t *setor = (setor_t *)calloc(sizeof(setor_t), 1);
+
+    setor->qtd_sensores_instalados = 0;
+    setor->prox = NULL;
+
+    setor->id = qtd_setores + 1;
+    printf("Setor de id: %i\n", setor->id);
+
+    printf("Descrição do setor: ");
+    fgets(setor->descricao, T_STR, stdin);
+    remove_enter(setor->descricao);
+    formata_maiusculo(setor->descricao, 0);
+
+    return setor;
+}
+
+void coloca_setor_na_lista(setor_t *loop, setor_t **lista, int qtd_setores)
+{
+    setor_t *novo_setor = cadastro_setor(qtd_setores);
+    
+    //adiciona pelo final
+    if (!(*lista)) {
+        (*lista) = novo_setor;
+    } else {
+        for (loop; loop != NULL; loop = loop->prox ) {
+            if (!((*lista)->prox)) {
+                (*lista)->prox = novo_setor;
+            }
+        }
+    }
+
+    //garante que não fiquem ponteiros soltos
+    novo_setor = NULL;
+    free(novo_setor);
+}
+
+void distribui_sensor(setor_t **lista_de_setor, sensor_t *lista_de_sensor)
+{
+    int id_setor = pede_id_setor((*lista_de_setor));
+    setor_t *setor = localiza_setor_por_id((*lista_de_setor), id_setor);
+
+    if (!setor) {
+        printf("Setor não encontrado ou não existe!\n");
+        return;
+    }
+
+    if (setor->qtd_sensores_instalados > MAX_SENSOR_LOCAL) {
+        printf("Número máximo de sensores instalados no setor indicado\n");
+        return;
+    }
+
+    int id_sensor = pede_id_sensor(lista_de_sensor);
+    sensor_t *sensor = localiza_sensor_por_id(lista_de_sensor, id_sensor);
+
+    if (!sensor) {
+        printf("Sensor não encontrado ou não existe!\n");
+        return;
+    }
+
+    sensor_t *aux = copia_sensor(sensor);
+
+    do {
+        printf("Hora da primeira leitura do sensor (entre 0 e 23): ");
+        scanf("%i", &aux->horario_primeira_leitura.horas);
+    } while (aux->horario_primeira_leitura.horas > 23 || aux->horario_primeira_leitura.horas < 0);
+
+    do {
+        printf("Minuto da primeira leitura do sensor (entre 0 e 59): ");
+        scanf("%i", &aux->horario_primeira_leitura.minutos);
+    } while (aux->horario_primeira_leitura.minutos > 59 || aux->horario_primeira_leitura.minutos < 0);
+
+        do {
+        printf("Hora da segunda leitura do sensor (entre 0 e 23): ");
+        scanf("%i", &aux->horario_segunda_leitura.horas);
+    } while (aux->horario_segunda_leitura.horas > 23 || aux->horario_segunda_leitura.horas < 0);
+
+    do {
+        printf("Minuto da segunda leitura do sensor (entre 0 e 59): ");
+        scanf("%i", &aux->horario_segunda_leitura.minutos);
+        getchar();
+    } while (aux->horario_segunda_leitura.minutos > 59 || aux->horario_segunda_leitura.minutos < 0);
+    
+    aux->primeira_medicao = ABSURDO;
+    aux->segunda_medicao = ABSURDO;
+
+    aux->prox = setor->sensores_instalados;
+    setor->sensores_instalados = aux;
+
+    aux = NULL;
+    free(aux);
+}
+
+sensor_t *copia_sensor(sensor_t *sensor)
+{
+    sensor_t *aux = (sensor_t *)calloc(sizeof(sensor_t), 1);
+    aux->id = sensor->id;
+    strcpy(aux->tipo, sensor->tipo);
+    aux->minimo_faixa_leitura = sensor->minimo_faixa_leitura;
+    aux->maximo_faixa_leitura = sensor->maximo_faixa_leitura;
+    aux->prox = NULL;
+
+    return aux;
+}
+
+//inserir dados
+sensor_t *acha_sensor_no_setor(setor_t *lista_de_setores)
+{
+    setor_t *lista = (setor_t *)calloc(sizeof(setor_t), 1);
+    int id;
+
+    do {
+        id = pede_id_setor(lista_de_setores);
+        lista = localiza_setor_por_id(lista_de_setores, id);
+
+        if (!lista) {
+            printf("Setor não encontrado!\n");
+            printf("Para sair da operação digite 0\n");
+        }
+    } while (!lista && id != 0);
+    
+    if (id == 0) {
+        printf("Operação cancelada!\n");
+        return NULL;
+    }
+
+    if (!lista->sensores_instalados) {
+        printf("Não há sensores instalados nesse setor\n");
+        printf("Operação cancelada!\n");
+        return NULL;
+    }
+
+    sensor_t *sensor = (sensor_t *)calloc(sizeof(sensor_t), 1);
+    do {
+        id = pede_id_sensor(lista->sensores_instalados);
+        sensor = localiza_sensor_por_id(lista->sensores_instalados, id);
+
+        if (!sensor) {
+            printf("Sensor não encontrado!\n");
+            printf("Para sair da operação digite 0\n");
+        }
+    } while (!sensor && id != 0);
+    
+    if (id == 0) {
+        printf("Operação cancelada!\n");
+        return NULL;
+    }
+
+    return sensor;
+}
+
+void insere_dados_de_leitura(setor_t *lista_de_setores)
+{
+    int opc;
+    float leitura;
+    sensor_t *sensor = acha_sensor_no_setor(lista_de_setores);
+
+    if (!sensor) return;
+
+    printf("Dados da leitura: ");
+    scanf("%f", &leitura);
+    getchar();
+
+    if (leitura > sensor->maximo_faixa_leitura || leitura < sensor->minimo_faixa_leitura) {
+        char resposta;
+        printf("A leitura está fora dos limites do sensor\n");
+        printf("Deseja inserir os dados mesmo assim?(Digite S para confirmar) ");
+        scanf("%c", &resposta);
+        getchar();
+
+        if (resposta != 'S' && resposta != 's') {
+            printf("Operação cancelada!\n");
+            return;
+        }
+    }
+
+    do {
+        printf("Em qual horário deseja inserir a leitura?\n");
+        printf("1.Primeira leitura: %02i:%02i\n", sensor->horario_primeira_leitura.horas, sensor->horario_primeira_leitura.minutos);
+        printf("2.Segunda leitura: %02i:%02i\n", sensor->horario_segunda_leitura.horas, sensor->horario_segunda_leitura.minutos);
+        printf("0.Cancelar\n");
+        scanf("%i", &opc);
+        getchar();
+        
+        if (opc == 1) {
+            sensor->primeira_medicao = leitura;         
+            printf("Leitura inserida com sucesso!\n"); 
+            break;
+        } else {
+            if (opc == 2) {
+                sensor->segunda_medicao = leitura;         
+                printf("Leitura inserida com sucesso!\n");
+                break;
+            }
+        }
+    } while (opc != 0);
+    return;
+}
+
+//pede id pro usuário
+int pede_id_sensor(sensor_t *lista)
+{
+    int id;
+    printf("Sensores: \n");
+    lista_sensores(lista);
+    
+    printf("Digite o id do sensor desejado: ");
+    scanf("%i", &id);
+    getchar();
+
+    return id;
+}
+
+int pede_id_setor(setor_t *lista)
+{
+    int id;
+    printf("Setores: \n");
+    lista_setores(lista);
+    
+    printf("Digite o id do setor desejado: ");
+    scanf("%i", &id);
+    getchar();
+    
+    return id;
+}
+
+
+///localiza por id
+sensor_t *localiza_sensor_por_id(sensor_t *lista, int id)
+{
+    for (lista; lista != NULL; lista = lista->prox) {
+        if (lista->id == id) {
+            return lista;
+        }
+    }
+
+    return lista;
+}
+
+setor_t *localiza_setor_por_id(setor_t *lista, int id) 
+{
+    for (lista; lista != NULL; lista = lista->prox) {
+        if (lista->id == id) {
+            return lista;
+        }
+    }
+
+    return lista;   
+}
