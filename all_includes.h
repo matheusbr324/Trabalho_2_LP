@@ -1,0 +1,13 @@
+#include <ctype.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include "./includes/cadastro.h"
+#include "./includes/formatacao.h"
+#include "./includes/leitura.h"
+#include "./includes/localizacao.h"
+#include "./includes/menus.h"
+#include "./includes/prints.h"
+#include "./includes/relatorios.h"
+#include "./includes/tela.h"
+#include "./includes/types.h"
