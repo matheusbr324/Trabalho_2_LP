@@ -9,6 +9,7 @@ int menu_principal(void)
     printf("--------------------\n");
     printf("1.Menu de sensores\n");
     printf("2.Menu de leituras\n");
+    printf("3.Menu de exclusão\n");
     printf("0.Sair do programa\n");
     printf("--------------------\n");
     printf("::: ");
@@ -61,13 +62,13 @@ int menu_leituras(void)
     return opcao;
 }
 
-int menu_arquivos(void)
+int menu_exclusao(void)
 {
     int opcao;
     
-    printf("|    MENU ARQUIVOS    |\n");
+    printf("|    MENU EXCLUSÂO    |\n");
     printf("-----------------------\n");
-    printf("1.Exportar os dados em HTML\n");
+    printf("1.Excluir(desinstalar) sensor de setor\n");
     printf("0.Retornar ao menu principal\n");
     printf("-----------------------\n");
     printf("::: ");

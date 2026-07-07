@@ -4,6 +4,6 @@
 int menu_principal(void);
 int menu_setor_sensor(void);
 int menu_leituras(void);
-int menu_arquivos(void);
+int menu_exclusao(void);
 
 #endif

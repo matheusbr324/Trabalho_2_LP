@@ -1,7 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "../includes/types.h"
 #include "../includes/localizacao.h"
+#include "../includes/formatacao.h"
 #include "../includes/cadastro.h"
 
 sensor_t *cadastro_sensor(int qtd_sensores)
@@ -28,17 +30,19 @@ sensor_t *cadastro_sensor(int qtd_sensores)
     return sensor;
 }
 
-void coloca_sensor_na_lista(sensor_t *loop, sensor_t **lista, int qtd_sensores)
+void coloca_sensor_na_lista(sensor_t **lista, int qtd_sensores)
 {
     sensor_t *novo_sensor = cadastro_sensor(qtd_sensores);
+    sensor_t *loop = (*lista);
     
     //adiciona pelo final
     if (!(*lista)) {
         (*lista) = novo_sensor;
     } else {
         for (loop; loop != NULL; loop = loop->prox ) {
-            if (!((*lista)->prox)) {
-                (*lista)->prox = novo_sensor;
+            if (loop->prox == NULL) {
+                loop->prox = novo_sensor;
+                break;
             }
         }
     }
@@ -66,17 +70,19 @@ setor_t *cadastro_setor(int qtd_setores)
     return setor;
 }
 
-void coloca_setor_na_lista(setor_t *loop, setor_t **lista, int qtd_setores)
+void coloca_setor_na_lista(setor_t **lista, int qtd_setores)
 {
     setor_t *novo_setor = cadastro_setor(qtd_setores);
-    
+    setor_t *loop = (*lista);
+
     //adiciona pelo final
     if (!(*lista)) {
         (*lista) = novo_setor;
     } else {
         for (loop; loop != NULL; loop = loop->prox ) {
-            if (!((*lista)->prox)) {
-                (*lista)->prox = novo_setor;
+            if (loop->prox == NULL) {
+                loop->prox = novo_setor;
+                break;
             }
         }
     }
@@ -96,7 +102,7 @@ void distribui_sensor(setor_t **lista_de_setor, sensor_t *lista_de_sensor)
         return;
     }
 
-    if (setor->qtd_sensores_instalados > MAX_SENSOR_LOCAL) {
+    if (setor->qtd_sensores_instalados >= MAX_SENSOR_LOCAL) {
         printf("Número máximo de sensores instalados no setor indicado\n");
         return;
     }
@@ -137,6 +143,7 @@ void distribui_sensor(setor_t **lista_de_setor, sensor_t *lista_de_sensor)
 
     aux->prox = setor->sensores_instalados;
     setor->sensores_instalados = aux;
+    setor->qtd_sensores_instalados++;
 
     aux = NULL;
     free(aux);

@@ -1,6 +1,8 @@
 #ifndef _LOCALIZACAO_H
 #define _LOCALIZACAO_H
 
+#include "types.h"
+
 //funções que pedem pro usuario
 int pede_id_sensor(sensor_t *lista);
 int pede_id_setor(setor_t *lista);

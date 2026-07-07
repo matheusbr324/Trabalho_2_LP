@@ -1,6 +1,8 @@
 #ifndef _PRINTS_H
 #define _PRINTS_H
 
+#include "types.h"
+
 //id e nome(todos) 
 void lista_sensores(sensor_t *sensor);
 void lista_setores(setor_t *setor);

@@ -70,10 +70,9 @@ void mostra_sensores_por_setor(setor_t *setor)
         sensor = setor->sensores_instalados;
         for (sensor; sensor != NULL; sensor = sensor->prox) {
             dados_sensor(sensor);
-            printf("Horário da primeira leitura %02i:%02i\n", sensor->horario_primeira_leitura.horas, sensor->horario_primeira_leitura.minutos);
-            printf("Horário da segunda leitura %02i:%02i\n", sensor->horario_segunda_leitura.horas, sensor->horario_segunda_leitura.minutos);
+            printf("Horário da primeira leitura: %02i:%02i\n", sensor->horario_primeira_leitura.horas, sensor->horario_primeira_leitura.minutos);
+            printf("Horário da segunda leitura.: %02i:%02i\n\n", sensor->horario_segunda_leitura.horas, sensor->horario_segunda_leitura.minutos);
         }
         free(sensor);
     }
-    printf("\n");
 }

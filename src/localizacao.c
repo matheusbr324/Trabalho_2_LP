@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include "../includes/localizacao.h"
 #include "../includes/types.h"
 #include "../includes/prints.h"
 

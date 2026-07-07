@@ -27,8 +27,7 @@ void relata_leituras(setor_t *lista_de_setores)
 void relata_leituras_csv(setor_t *lista_de_setores) 
 {
     sensor_t *sensor = acha_sensor_no_setor(lista_de_setores);
-    FILE *fp = NULL;
-    fp = fopen("relatorios.csv", "w");
+    FILE *fp = fopen("./relatorios/leituras.csv", "w");
     if (!sensor) return;
 
     fprintf(fp, "Horario: ;");
@@ -78,7 +77,7 @@ void relata_variacao_csv(setor_t *lista_de_setores)
 {
     sensor_t *sensor = acha_sensor_no_setor(lista_de_setores);
 
-    FILE *fp = fopen("variacao.csv", "w");
+    FILE *fp = fopen("./relatorios/variacao.csv", "w");
 
     float primeira, segunda, variacao;
 
@@ -139,7 +138,7 @@ void relata_media_csv(setor_t *lista_de_setores)
 {
     sensor_t *sensor = acha_sensor_no_setor(lista_de_setores);
 
-    FILE *fp = fopen("media.csv", "w");
+    FILE *fp = fopen("./relatorios/media.csv", "w");
 
     float primeira = sensor->primeira_medicao;
     float segunda = sensor->segunda_medicao;
