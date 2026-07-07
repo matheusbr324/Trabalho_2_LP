@@ -8,12 +8,13 @@ RELA = ./relatorios
 TARGET = Industria
 
 all: objetos
-	$(CC) $(OBJS)/main.o $(OBJS)/tela.o $(OBJS)/relatorios.o $(OBJS)/prints.o $(OBJS)/menus.o $(OBJS)/localizacao.o $(OBJS)/leitura.o $(OBJS)/formatacao.o $(OBJS)/exclusao.o $(OBJS)/cadastro.o $(OBJS)/arquivos.o -o $(TARGET)
+	$(CC) $(OBJS)/main.o $(OBJS)/tela.o $(OBJS)/relatorios.o $(OBJS)/prints.o $(OBJS)/menus.o $(OBJS)/localizacao.o $(OBJS)/leitura.o $(OBJS)/formatacao.o $(OBJS)/exportacao.o $(OBJS)/exclusao.o $(OBJS)/cadastro.o $(OBJS)/arquivos.o -o $(TARGET)
 
 objetos:
 	$(CC) -c $(SRC)/arquivos.c -o $(OBJS)/arquivos.o
 	$(CC) -c $(SRC)/cadastro.c -o $(OBJS)/cadastro.o
 	$(CC) -c $(SRC)/exclusao.c -o $(OBJS)/exclusao.o
+	$(CC) -c $(SRC)/exportacao.c -o $(OBJS)/exportacao.o
 	$(CC) -c $(SRC)/formatacao.c -o $(OBJS)/formatacao.o
 	$(CC) -c $(SRC)/leitura.c -o $(OBJS)/leitura.o
 	$(CC) -c $(SRC)/localizacao.c -o $(OBJS)/localizacao.o

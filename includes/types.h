@@ -33,10 +33,4 @@ typedef struct setor {
     struct setor *prox;
 } setor_t;
 
-typedef struct verificacao {
-    int indice_sensor;
-    int indice_setor;
-    int true_false;
-} verificacao_t;
-
 #endif

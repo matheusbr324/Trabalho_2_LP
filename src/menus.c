@@ -53,6 +53,7 @@ int menu_leituras(void)
     printf("5.Relatório de variação de leitura (.csv)\n");
     printf("6.Relatório de média de leitura (na tela)\n");
     printf("7.Relatório de média de leitura (.csv)\n");
+    printf("8.Exportar para HTML\n");
     printf("0.Retornar ao menu principal\n");
     printf("-----------------------\n");
     printf("::: ");

@@ -171,6 +171,14 @@ int main(void)
                         case 7:
                             relata_media_csv(lista_de_setores);
                             break;
+
+                        case 8: 
+                            FILE *fp = fopen("sensores_e_setores.html", "w");
+                            css_para_HTML(fp);
+                            exportar_sensores_HTML(fp, lista_de_sensores);
+                            exportar_setores_HTML(fp, lista_de_setores);
+                            fclose(fp);
+                            break;
                     }
                 } while (opc_2 != FIM);
                 break;

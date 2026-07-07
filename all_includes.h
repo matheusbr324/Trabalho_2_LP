@@ -5,6 +5,7 @@
 #include "./includes/arquivos.h"
 #include "./includes/cadastro.h"
 #include "./includes/exclusao.h"
+#include "./includes/exportacao.h"
 #include "./includes/formatacao.h"
 #include "./includes/leitura.h"
 #include "./includes/localizacao.h"
