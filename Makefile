@@ -27,6 +27,7 @@ objetos:
 limpar:
 	$(DEL) $(OBJS)/*.o
 	$(DEL) $(TARGET)
+	$(DEL) ./*.html
 
 reset_base_de_dados:
 	$(DEL) $(DB)/lista_sensores

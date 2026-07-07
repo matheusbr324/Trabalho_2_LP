@@ -96,11 +96,13 @@ int le_lista_setores(setor_t **lista)
                 //insere pelo final
                 if (!(*lista)) {
                     (*lista) = novo;
+                    loopador = (*lista);
                     qtd++;
                 } else {
                     for (loopador; loopador != NULL; loopador = loopador->prox ) {
                         if (!(loopador->prox)) {
                             loopador->prox = novo;
+                            loopador = loopador->prox;
                             qtd++;
                             break;
                         }
@@ -113,8 +115,8 @@ int le_lista_setores(setor_t **lista)
                         novo_sensor_no_setor = (sensor_t *)calloc(sizeof(sensor_t), 1);
                         fread(novo_sensor_no_setor, sizeof(sensor_t), 1, fp);
                         if (!feof(fp)) {
-                            novo_sensor_no_setor->prox = (*lista)->sensores_instalados;
-                            (*lista)->sensores_instalados = novo_sensor_no_setor;
+                            novo_sensor_no_setor->prox = loopador->sensores_instalados;
+                            loopador->sensores_instalados = novo_sensor_no_setor;
                         }
                     }
                 }

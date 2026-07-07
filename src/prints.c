@@ -54,7 +54,7 @@ void dados_setor(setor_t *setor)
 
 void dados_todos_setor(setor_t *setor)
 {
-    for (setor; setor != NULL; setor = setor->prox ) {
+    for (setor; setor != NULL; setor = setor->prox) {
         dados_setor(setor);
     }
     printf("\n");
@@ -63,7 +63,7 @@ void dados_todos_setor(setor_t *setor)
 void mostra_sensores_por_setor(setor_t *setor)
 {
     if (!setor->sensores_instalados) {
-        printf("Não há sensores cadastrados nesse setor!\n");
+        printf("Não há sensores cadastrados nesse setor!\n\n");
     } else {
         printf("Sensores instalados: \n");
         sensor_t *sensor = (sensor_t *)calloc(sizeof(sensor_t), 1); 

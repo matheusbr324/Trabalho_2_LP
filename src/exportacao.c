@@ -29,12 +29,13 @@ void css_para_HTML(FILE *fp)
     fprintf(fp, "       th {");
     fprintf(fp, "           border: 2px solid #111;");
     fprintf(fp, "           padding: 9px;");
+    fprintf(fp, "       }");
 
     //dados
     fprintf(fp, "       td {");
     fprintf(fp, "           border: 1px solid #333;");
     fprintf(fp, "           padding: 9px;");
-
+    fprintf(fp, "       }");
 
     //termina a estilização
     fprintf(fp, "   </style>");
@@ -60,12 +61,10 @@ void exportar_sensores_HTML(FILE *fp, sensor_t *lista)
 
     //segunda linha de cabeçalho
     fprintf(fp, "   <tr>\n");
-    fprintf(fp, "       <th>\n");
-    fprintf(fp, "           <td>Id</td>");
-    fprintf(fp, "           <td>Tipo</td>");
-    fprintf(fp, "           <td>Leitura mínima</td>");
-    fprintf(fp, "           <td>Leitura máxima</td>\n");
-    fprintf(fp, "       </th>\n");
+    fprintf(fp, "       <th>Id</th>");
+    fprintf(fp, "       <th>Tipo</th>");
+    fprintf(fp, "       <th>Leitura mínima</th>");
+    fprintf(fp, "       <th>Leitura máxima</th>\n");
     fprintf(fp, "   </tr>\n");
 
     //percorre sensores
@@ -75,8 +74,8 @@ void exportar_sensores_HTML(FILE *fp, sensor_t *lista)
         fprintf(fp, "   <tr>\n");
         fprintf(fp, "     <td>%i</td>", lista->id);
         fprintf(fp, "     <td>%s</td>", lista->tipo);
-        fprintf(fp, "     <td>%f</td>", lista->minimo_faixa_leitura);
-        fprintf(fp, "     <td>%f</td>\n", lista->maximo_faixa_leitura);
+        fprintf(fp, "     <td>%.2f</td>", lista->minimo_faixa_leitura);
+        fprintf(fp, "     <td>%.2f</td>\n", lista->maximo_faixa_leitura);
         fprintf(fp, "   </tr>\n");
     }
 
@@ -111,21 +110,21 @@ void exportar_setores_HTML(FILE *fp, setor_t *lista)
         fprintf(fp, "<tr>\n");
         fprintf(fp, "   <td>%i</td>", lista->id);
         fprintf(fp, "   <td>%s</td>", lista->descricao);
-        fprintf(fp, "   <td>%f</td>", lista->qtd_sensores_instalados);
+        fprintf(fp, "   <td>%i</td>", lista->qtd_sensores_instalados);
         
         //lista os sensores
-        fprintf(fp, "   <td>",);
+        fprintf(fp, "   <td>");
         
         if (lista->qtd_sensores_instalados > 0) {
             sensor_t *sensor = lista->sensores_instalados;
             for (sensor; sensor != NULL; sensor = sensor->prox) {
-                fprintf(fp, "Id: %i, Tipo: %s\n", sensor->id, sensor->tipo);
+                fprintf(fp, "Id: %i, Tipo: %s<br>", sensor->id, sensor->tipo);
             }
         } else {
             fprintf(fp, "   Não há sensores instalados\n");
         }
 
-        fprintf(fp, "   </td>\n")
+        fprintf(fp, "   </td>\n");
         fprintf(fp, "</tr>\n");
     }
 
